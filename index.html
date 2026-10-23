@@ -1,0 +1,1016 @@
+<!doctype html><html lang="zh-CN"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#0e1014">
+<title>短剧聚合播放台</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='112' fill='%230e1014'/%3E%3Ccircle cx='256' cy='256' r='150' fill='none' stroke='%234da3ff' stroke-width='26'/%3E%3Cpath d='M228 188l108 68-108 68z' fill='%234da3ff'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#0e1014;--fg:#e9eef7;--mut:#8791a3;--card:#161a22;--card2:#1c222c;--line:#262d3a;--acc:#4da3ff;--warn:#ffcb52}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(1100px 560px at 18% -12%,#152033,transparent),var(--bg);color:var(--fg);font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","Microsoft YaHei",sans-serif;-webkit-tap-highlight-color:transparent}
+header{position:sticky;top:0;z-index:9;padding:11px 16px;border-bottom:1px solid var(--line);display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:rgba(14,16,20,.88);backdrop-filter:blur(12px)}
+h1{font-size:15px;margin:0;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+h1 b{color:var(--acc);font-weight:700}
+select,input,button{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:13px;font-family:inherit;outline:none}
+select:hover,input:focus,button:hover{border-color:var(--acc)}
+button{cursor:pointer;transition:.14s}button:active{transform:scale(.975)}
+button.on{background:var(--acc);color:#04121f;border-color:var(--acc);font-weight:700}
+main{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:14px;padding:14px;max-width:1680px;margin:0 auto}
+@media(max-width:1040px){main{grid-template-columns:1fr}}
+#stage{background:#000;border-radius:14px;overflow:hidden;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 18px 50px -22px #000}
+video{width:100%;height:100%;object-fit:contain;background:#000}
+#tip{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:26px;font-size:13px;line-height:1.9;color:#d3dcea;background:rgba(8,10,14,.9);z-index:2}
+#tip.on{display:flex}
+.bar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.bar .sp{flex:1}
+.srcinfo{margin-top:6px;font-size:12px;color:var(--mut);min-height:16px}
+.srcinfo b{color:var(--fg);font-weight:600}
+.chk{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--mut);cursor:pointer;user-select:none}
+.chk input{accent-color:var(--acc)}
+#np{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44%;text-align:right}
+#side{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.panel h2{font-size:12px;margin:0 0 9px;color:var(--mut);font-weight:700;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px}
+.panel h2 .sp{flex:1}
+#listBox{max-height:56vh;overflow:auto;margin:0 -4px;padding:0 4px}
+.row{display:flex;gap:10px;align-items:center;padding:7px;border-radius:10px;cursor:pointer;transition:.14s}
+.row:hover{background:var(--card2)}
+.row.act{background:#17283f;box-shadow:inset 0 0 0 1px #2f4f78}
+.thumb{width:46px;height:62px;border-radius:7px;object-fit:cover;background:#222a36;flex:0 0 auto}
+.meta{min-width:0;flex:1}
+.t{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.s{font-size:11px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tagm{display:inline-block;font-size:10px;padding:0 5px;border-radius:5px;background:#22303f;color:#8fb7e0;margin-right:4px;vertical-align:1px}
+.fav{background:none;border:none;padding:4px 6px;font-size:15px;color:#5d6779;line-height:1}
+.fav.on{color:var(--warn)}
+.eps{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:6px;max-height:30vh;overflow:auto}
+.ep{text-align:center;padding:7px 0;border-radius:8px;background:var(--card2);cursor:pointer;font-size:12px;border:1px solid transparent}
+.ep:hover{background:#26344a}
+.ep.act{background:var(--acc);color:#04121f;font-weight:700}
+.ep.lock{opacity:.35;cursor:not-allowed}
+#log{font-family:ui-monospace,Consolas,monospace;font-size:11px;color:var(--mut);white-space:pre-wrap;word-break:break-all;max-height:110px;overflow:auto}
+.badge{font-size:11px;padding:2px 9px;border-radius:20px;background:var(--card2);color:var(--mut);white-space:nowrap}
+.tabs{display:flex;gap:5px}
+.tabs button{padding:4px 9px;font-size:12px;border-radius:8px}
+.more{width:100%;margin-top:8px;padding:8px;font-size:12px;color:var(--mut);background:var(--card2)}
+.hint{font-size:11px;color:var(--mut);padding:10px 4px;text-align:center}
+.pdot{width:5px;height:5px;border-radius:50%;background:var(--acc);display:inline-block;margin-right:4px;vertical-align:2px}
+.upd{font-size:10px;padding:1px 6px;border-radius:20px;background:#3a2a12;color:var(--warn);margin-left:6px;white-space:nowrap;vertical-align:1px}
+#diag{position:fixed;inset:0;z-index:60;display:none;padding:24px;background:rgba(6,8,12,.86)}
+#diag.on{display:block}
+#diag .box{max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;max-height:84vh;overflow:auto}
+#diag h3{margin:0;font-size:14px;display:flex;align-items:center;gap:10px}
+#diag h4{margin:16px 0 6px;font-size:12px;color:var(--mut);font-weight:600;letter-spacing:.04em}
+#diag table{width:100%;border-collapse:collapse;font-size:12px}
+#diag td{padding:3px 6px;border-bottom:1px solid #1b212c;color:var(--mut)}
+#diag td b{color:var(--fg);font-weight:600}
+#diag .ok{color:#3fb950}
+#diag .bad{color:#e5534b}
+#diag .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+#diag .acts button{font-size:12px;padding:6px 11px}
+</style></head><body>
+<header>
+  <h1>短剧<b>聚合</b>台</h1>
+  <select id="mod"></select>
+  <input id="kw" placeholder="搜剧名 · 跨模块" style="width:168px">
+  <button id="go">搜索 / 刷新</button>
+  <button id="rnd" title="当前模块随机一部">随机</button>
+  <button id="resume" title="接着上次看" style="display:none">继续观看</button>
+  <button id="diag" title="诊断面板（按 ? 打开）">诊断</button>
+  <span id="stat" class="badge"></span>
+</header>
+<main>
+  <section>
+    <div id="stage"><video id="v" controls playsinline preload="metadata"></video><div id="tip"></div></div>
+    <div class="bar">
+      <button id="prevEp" title="上一集（P）">⏮ 上一集</button>
+      <button id="nextEp" title="下一集（N）">下一集 ⏭</button>
+      <select id="rate" title="倍速">
+        <option value="0.75">0.75x</option><option value="1" selected>1.0x</option>
+        <option value="1.25">1.25x</option><option value="1.5">1.5x</option><option value="2">2.0x</option>
+      </select>
+      <label class="chk"><input type="checkbox" id="autoNext" checked> 自动连播</label>
+      <button id="sameBtn" title="拿剧名去其他模块找同剧">找同剧</button>
+      <button id="altBtn" title="当前源有问题时，换到别的模块的同名剧">换源</button>
+      <button id="shareBtn" title="复制当前集的直达链接">分享</button>
+      <span class="sp"></span>
+      <span id="np"></span>
+    </div>
+    <div id="srcinfo" class="srcinfo"></div>
+  </section>
+  <aside id="side">
+    <div class="panel">
+      <h2>剧集<span class="sp"></span>
+        <span class="tabs">
+          <button id="tbList" class="on">列表</button>
+          <button id="tbFav">收藏</button>
+          <button id="tbHist">历史</button>
+        </span>
+      </h2>
+      <div id="listBox"></div>
+      <button id="more" class="more" style="display:none">加载更多</button>
+    </div>
+    <div class="panel"><h2>分集<span class="sp"></span><span id="epinfo" class="s"></span></h2><div id="eps" class="eps"><div class="hint">先选一部剧</div></div></div>
+    <div class="panel"><h2>日志</h2><div id="log"></div></div>
+  </aside>
+</main>
+<div id="diag"><div class="box">
+  <h3>诊断面板<span style="flex:1"></span><button id="diagClose">关闭</button></h3>
+  <h4>上游健康（点「重新探测」真打上游）</h4>
+  <table id="dHealth"></table>
+  <div class="acts"><button id="dProbe">重新探测</button></div>
+  <h4>本地数据</h4>
+  <table id="dLocal"></table>
+  <div class="acts">
+    <button id="expBtn">导出数据</button>
+    <button id="impBtn">导入数据</button>
+    <button id="clrHist">清空历史</button>
+    <button id="clrFav">清空收藏</button>
+  </div>
+  <input type="file" id="impFile" accept=".json,application/json" style="display:none">
+  <h4>快捷键</h4>
+  <table>
+    <tr><td>空格</td><td>播放 / 暂停</td><td>← →</td><td>后退 / 前进 5 秒</td></tr>
+    <tr><td>↑ ↓</td><td>音量</td><td>N / P</td><td>下一集 / 上一集</td></tr>
+    <tr><td>F</td><td>全屏</td><td>?</td><td>开 / 关本面板</td></tr>
+  </table>
+</div></div>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"></script>
+<script>window.Hls||document.write('<scr'+'ipt src="https://unpkg.com/hls.js@1.5.17/dist/hls.min.js"></scr'+'ipt>');</script>
+<script>
+const API="https://duanju-hub.cxykk919169.workers.dev";
+const $=function(s){return document.querySelector(s)};
+const api=function(p){return fetch(API+'/api/'+p).then(function(r){return r.json()})};
+const LS={
+  g:function(k,d){try{var v=localStorage.getItem('dj_'+k);return v?JSON.parse(v):d}catch(e){return d}},
+  s:function(k,v){try{localStorage.setItem('dj_'+k,JSON.stringify(v))}catch(e){}}
+};
+var MODS={},cur=null,hls=null,CUR=null,PAGE_NO=1,ITEMS=[],TAB='list',KW='',LOADING=false,END=false,LAST_T=0,PENDING_SEEK=0,SEEN={};
+var HEALTH={},AUTO_SKIP=0,ALT_TRY=0,ALT_DONE={},HB_TIMER=null,PFAIL=0,PLAST=0,STALL_T=null,ALT_UI=null;
+var ROUTE_LOCK=0;
+var MARKS={full:' · 可播',partial:' · 部分免费',crypto:' · 可播',locked:' · 仅付费',local:' · 直连',dead:' · 已失效'};
+var MARK2={full:'✓ 全免',partial:'◐ 部分',crypto:'⛿ 加密',locked:'🔒 付费',local:'⨯ 本机',dead:'⨯ 失效'};
+
+function log(m){var el=$('#log');el.textContent=(new Date().toLocaleTimeString()+' '+m+'\n'+el.textContent).slice(0,5000)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function placeholder(t){
+  var ch=String(t||'?').trim().slice(0,1)||'?';
+  var svg='<svg xmlns="http://www.w3.org/2000/svg" width="72" height="96"><rect width="72" height="96" rx="7" fill="#212734"/><text x="36" y="58" font-size="30" fill="#59617a" text-anchor="middle" font-family="sans-serif">'+ch.replace(/[<&>]/g,'')+'</text></svg>';
+  return 'data:image/svg+xml,'+encodeURIComponent(svg);
+}
+function tip(m){var el=$('#tip');if(!m){el.className='';el.innerHTML='';return}el.className='on';el.innerHTML=m}
+function why(r,mod){
+  var s=String((r&&(r.error||r.status))||'');
+  var local=!!(mod&&MODS[mod]&&MODS[mod].play==='local');
+  if(/cooling/i.test(s)) return '这个源刚连续失败，已临时下线'+(r&&r.retry?('（'+r.retry+' 秒后自动恢复）'):'')+'。<br>已自动给你换源。';
+  if(/locked/i.test(s)) return '这一集付费锁定。<br>点「找同剧」去别的模块碰碰同款。';
+  if(/networkError|manifestLoadError|manifestParsingError|403|manifest fetch failed|engine 中继无清单|blocked/i.test(s))
+    return (local?'这个源的分片 CDN 拒绝云端出口，只有本机网络能取。':'取流被上游拒绝。')
+      +'<br>换「黄果漫剧 / 2048 / 芒果 / 蜜月 / 花魁 / 海角」，这些云端能播。';
+  if(/404|no episode|no url/i.test(s)) return '这个源取不到地址（上游改版或下架）。<br>换一个模块试试。';
+  return '取播失败：'+esc(s||'未知错误');
+}
+
+/* ---------------- 收藏 / 历史 ---------------- */
+function favList(){return LS.g('fav',[])}
+function isFav(mod,id){return favList().some(function(x){return x.mod===mod&&x.id===id})}
+function toggleFav(mod,it,node){
+  var h=favList(),k=mod+':'+it.id,i=-1;
+  for(var x=0;x<h.length;x++)if(h[x].mod===mod&&h[x].id===it.id){i=x;break}
+  if(i>=0){h.splice(i,1);log('取消收藏 '+(it.title||it.id))}
+  else{
+    var known=0;
+    if(CUR&&CUR.it&&CUR.it.id===it.id&&CUR.eps&&CUR.eps.length)known=CUR.eps.length;
+    h.unshift({mod:mod,id:it.id,title:it.title||it.id,cover:it.cover||'',ep:it.ep||'',n:known,ts:Date.now()});log('收藏 '+(it.title||it.id))
+  }
+  LS.s('fav',h.slice(0,200));
+  var b=node&&node.querySelector('.fav');
+  if(b){var on=isFav(mod,it.id);b.className='fav'+(on?' on':'');b.textContent=on?'★':'☆'}
+  if(TAB!=='list')renderLocal();
+}
+function histList(){return LS.g('hist',[])}
+var RESUME_T=0;
+function wSave(mod,it,ep,t,dur){
+  if(!mod||!it||!it.id)return;
+  if(Date.now()-RESUME_T>8000){RESUME_T=Date.now();setTimeout(paintResume,0)}
+  var h=histList().filter(function(x){return !(x.mod===mod&&x.id===it.id)});
+  h.unshift({mod:mod,id:it.id,title:it.title||it.id,cover:(CUR&&CUR.cover)||it.cover||'',ep:ep||1,t:Math.round(t||0),dur:Math.round(dur||0),ts:Date.now()});
+  LS.s('hist',h.slice(0,60));
+}
+function wGet(mod,id){
+  var h=histList();
+  for(var i=0;i<h.length;i++)if(h[i].mod===mod&&h[i].id===id)return h[i];
+  return null;
+}
+
+/* ---------------- 列表渲染 ---------------- */
+function rowEl(it,mod){
+  var d=document.createElement('div');d.className='row';
+  var ph=placeholder(it.title||it.id);
+  var cov=it.cover?esc(it.cover):ph;
+  var on=isFav(mod,it.id);
+  var w=wGet(mod,it.id);
+  var sub='';
+  if(mod)sub+='<span class="tagm">'+esc(mod)+'</span>';
+  if(w&&w.t>10)sub+='<span class="pdot"></span>看到第'+esc(w.ep)+'集 · '+fmtT(w.t)+' / ';
+  sub+=esc(it.ep||'');
+  d.innerHTML='<img class="thumb" src="'+cov+'" data-ph="'+ph+'" onerror="this.onerror=null;this.src=this.dataset.ph" loading="lazy">'
+    +'<div class="meta"><div class="t">'+esc(it.title||it.id)+'</div><div class="s">'+sub+'</div></div>'
+    +'<button class="fav'+(on?' on':'')+'" title="收藏">'+(on?'★':'☆')+'</button>';
+  d.querySelector('.fav').onclick=function(e){e.stopPropagation();toggleFav(mod,it,d)};
+  d.onclick=function(){ROUTE_LOCK=0;var ix=ITEMS.indexOf(it);if(ix>=0){PICKIDX=ix;SKIPN=0}openItem(mod,it,d)};
+  return d;
+}
+function fmtT(s){
+  s=Math.round(s||0);var m=Math.floor(s/60),ss=s%60;
+  return (m<10?'0':'')+m+':'+(ss<10?'0':'')+ss;
+}
+function clearList(){ITEMS=[];SEEN={};$('#listBox').innerHTML='';}
+
+async function loadList(){
+  if(LOADING||END||TAB!=='list')return;
+  LOADING=true;
+  var mod=$('#mod').value;
+  var mb=$('#more');if(mb){mb.style.display='';mb.textContent='加载中…'}
+  try{
+    var r=(mod==='all')
+      ? await api('all?page='+PAGE_NO+'&per=8')
+      : await api('list?mod='+mod+'&page='+PAGE_NO+'&size=24');
+    if(!r.ok){
+      var nx=(mod==='all')?'':nextHealthyMod(mod);
+      if(nx&&AUTO_SKIP<3){
+        AUTO_SKIP++;
+        log('模块 '+mod+' 不可用（'+(r.error||'上游无响应')+'），自动切到 '+nx);
+        $('#mod').value=nx;PAGE_NO=1;ITEMS=[];SEEN={};$('#listBox').innerHTML='';
+        LOADING=false;
+        return loadList();
+      }
+      log('模块 '+mod+' 不可用：'+(r.error||''));
+      if(PAGE_NO===1)$('#listBox').innerHTML='<div class="hint">这个模块暂时取不到数据<br>点上面的模块下拉换一个，或稍等重试</div>';
+      if(mb){mb.style.display='none';mb.textContent='重试'}
+      LOADING=false;
+      return;
+    }
+    var items=r.items||[];
+    var added=0;
+    for(var i=0;i<items.length;i++){
+      var it=items[i],mk=(it.mod||mod)+':'+it.id;
+      if(SEEN[mk])continue;
+      SEEN[mk]=1;ITEMS.push(it);added++;
+      $('#listBox').appendChild(rowEl(it,it.mod||mod));
+    }
+    if(!items.length){END=true;if(PAGE_NO===1)$('#listBox').innerHTML='<div class="hint">该模块暂无数据</div>'}
+    else if(r.end)END=true;
+    PAGE_NO++;
+    if(mb){mb.style.display=END?'none':'';mb.textContent='加载更多'}
+    log((mod==='all'?'全部模块':mod)+' 本页 +'+added+'，累计 '+ITEMS.length+' 条');
+    /* 不再自动开播：打开站点只出列表，看什么老板自己点 */
+  }catch(e){log('列表失败 '+e);if(mb)mb.textContent='重试'}
+  LOADING=false;
+}
+
+function renderLocal(){
+  clearList();
+  $('#more').style.display='none';
+  var arr=TAB==='fav'?favList().slice():histList().slice();
+  /* 有更新的排前面，一眼看到追的剧动了没 */
+  if(TAB==='fav')arr.sort(function(a,b){
+    var ua=UPD[a.mod+':'+a.id]?1:0,ub=UPD[b.mod+':'+b.id]?1:0;
+    return ub-ua;
+  });
+  if(!arr.length){
+    $('#listBox').innerHTML='<div class="hint">'+(TAB==='fav'?'还没有收藏，点行尾 ☆ 试试':'还没有观看记录')+'</div>';
+    return;
+  }
+  $('#listBox').innerHTML='';
+  for(var i=0;i<arr.length;i++){
+    var it=arr[i];
+    var d=rowEl(it,it.mod);
+    if(TAB==='fav'&&UPD[it.mod+':'+it.id]){
+      var tt=d.querySelector('.t');
+      if(tt)tt.innerHTML+='<span class="upd">更新至 '+UPD[it.mod+':'+it.id]+' 集</span>';
+    }
+    if(TAB==='hist'&&it.t>0){
+      var s=d.querySelector('.s');
+      if(s)s.innerHTML+='<span style="color:#5d6779"> · 上次 '+fmtT(it.t)+'</span>';
+    }
+    $('#listBox').appendChild(d);
+  }
+  log((TAB==='fav'?'收藏 ':'历史 ')+arr.length+' 条');
+}
+
+async function doSearch(kw){
+  clearList();
+  $('#more').style.display='none';
+  TAB='list';
+  $('#tbList').className='on';$('#tbFav').className='';$('#tbHist').className='';
+  $('#listBox').innerHTML='<div class="hint">跨模块搜索…</div>';
+  try{
+    var r=await api('search?kw='+encodeURIComponent(kw)+'&mods=mj,dt,mg,my,hk,hjw,hg,sj');
+    var items=r.items||[];
+    if(!items.length){$('#listBox').innerHTML='<div class="hint">没搜到「'+esc(kw)+'」<br>换个关键词，或直接翻模块列表</div>';return}
+    $('#listBox').innerHTML='';
+    for(var i=0;i<items.length;i++){
+      var it=items[i];
+      ITEMS.push(it);
+      $('#listBox').appendChild(rowEl(it,it.mod||$('#mod').value));
+    }
+    log('搜索「'+kw+'」命中 '+items.length+' 条');
+  }catch(e){log('搜索失败 '+e);$('#listBox').innerHTML='<div class="hint">搜索出错</div>'}
+}
+
+/* ---------------- 详情 / 播放 ---------------- */
+async function openItem(mod,it,node,forceEp,pre){
+  var rows=document.querySelectorAll('.row');
+  for(var i=0;i<rows.length;i++)rows[i].classList.remove('act');
+  if(node)node.classList.add('act');
+  cur={mod:mod,id:it.id,title:it.title,cover:it.cover||''};
+  CUR={mod:mod,it:it,ep:0,eps:[],cover:it.cover||''};
+  paintSrc(mod,it,forceEp||'');
+  $('#eps').innerHTML='<div class="hint">解析分集…</div>';
+  $('#epinfo').textContent='';
+  $('#np').textContent='';
+  try{
+    var r=(pre&&pre.ok)?pre:await api('detail?mod='+mod+'&id='+encodeURIComponent(it.id));
+    if(!r.ok){
+      /* detail 挂了不等于不能播（hjw 引擎 detail 404 但直连取流是好的）。
+         按 epTotal 或单集盲播，播放失败再走换源/跳下一条。 */
+      log('详情失败：'+(r.error||'')+' · 盲试播放');
+      var n0=Number(it.epTotal||0),eps0=[];
+      for(var k0=1;k0<=(n0>0?n0:1);k0++)eps0.push({n:k0,ep:k0});
+      r={ok:true,episodes:eps0,title:it.title,epTotal:n0};
+    }
+    if(r.cover){CUR.cover=r.cover;if(it)it.cover=it.cover||r.cover}
+    var eps=r.episodes||r.eps||[];
+    if(!eps.length&&(r.epTotal||it.epTotal)){
+      var n=r.epTotal||it.epTotal;eps=[];
+      for(var k=1;k<=n;k++)eps.push({n:k,ep:k});
+    }
+    if(!eps.length)eps=[{n:1,ep:1}];
+    CUR.eps=eps;
+    $('#eps').innerHTML='';
+    for(var e=0;e<eps.length;e++){
+      var nn=Number(eps[e].n||eps[e].ep||eps[e].episodeNumber||eps[e].no);
+      var lock=!!(eps[e].locked||eps[e].lock);
+      var b=document.createElement('div');
+      b.className='ep'+(lock?' lock':'');b.textContent=nn;
+      b.dataset.n=nn;
+      if(!lock)b.onclick=(function(nn2,node2){return function(){play(mod,it,nn2,node2)}})(nn,nn2Node(b));
+      $('#eps').appendChild(b);
+    }
+    $('#epinfo').textContent=eps.length+' 集';
+    log('分集 '+eps.length+' · '+(r.title||it.title));
+    var w=wGet(mod,it.id);
+    var target=null;
+    if(forceEp!=null){
+      for(var zf=0;zf<eps.length;zf++){
+        if(Number(eps[zf].n||eps[zf].ep)===Number(forceEp)&&!eps[zf].locked){target=zf;break}
+      }
+    }
+    if(target===null&&w&&w.ep){
+      for(var z=0;z<eps.length;z++)if(Number(eps[z].n||eps[z].ep)===Number(w.ep)&&!eps[z].locked)target=z;
+    }
+    if(target===null){
+      for(var z2=0;z2<eps.length;z2++)if(!eps[z2].locked){target=z2;break}
+    }
+    if(target===null){
+      log('该条全付费，自动换下一条');
+      autoPick(PICKIDX+1);
+      return;
+    }
+    var el=document.querySelectorAll('#eps .ep')[target];
+    if(el){
+      if(w&&w.t>5&&Number(w.ep)===Number(eps[target].n||eps[target].ep)){PENDING_SEEK=w.t;log('续看第'+w.ep+'集 '+fmtT(w.t))}
+      else PENDING_SEEK=0;
+      el.click();
+    }
+  }catch(e){log('分集失败 '+e);$('#eps').innerHTML='<div class="hint">分集解析失败</div>';
+    if(forceEp==null||Number(forceEp)===1)setTimeout(function(){autoAlt(mod,it,forceEp||1)},300);
+  }
+}
+function nn2Node(b){return b}
+
+async function play(mod,it,ep,node,seek){
+  var all=document.querySelectorAll('.ep');
+  for(var i=0;i<all.length;i++)all[i].classList.remove('act');
+  if(node)node.classList.add('act');
+  if(CUR){CUR.ep=ep;CUR.mod=mod;CUR.it=it}
+  log('取播 '+mod+'/'+it.id+' ep'+ep+' …');
+  $('#np').textContent=(it.title||it.id)+' · 第'+ep+'集';
+  try{
+    var r=await api('m3u8?mod='+mod+'&id='+encodeURIComponent(it.id)+'&ep='+ep+'&fmt=json');
+    if(!r.ok){
+      log('失败: '+(r.error||'')+' '+(r.status||''));
+      tip(why(r,mod));
+      if(!(await autoAlt(mod,it,ep))&&PICKIDX>=0)autoPick(PICKIDX+1);
+      return;
+    }
+    log('清单 '+r.kind+' · '+(r.url||'').slice(0,110));
+    var v=$('#v');
+    if(hls){hls.destroy();hls=null}
+    v.removeAttribute('src');
+    try{v.load()}catch(e){}
+    if(CUR&&CUR.cover)v.poster=CUR.cover;
+    tip('正在加载…');
+    var sk=Number(seek||PENDING_SEEK||0);
+    PENDING_SEEK=0;
+    var doSeek=function(){
+      if(sk>5&&isFinite(v.duration)&&sk<v.duration-10){try{v.currentTime=sk;log('续播 '+fmtT(sk))}catch(e){}}
+    };
+    var skipJunk=function(){
+      /* 单集 + 时长<60s：上游引流短片（如 hg 的「AI换脸」系列），不当正片播 */
+      var d0=v.duration;
+      if(!(isFinite(d0)&&d0>0&&d0<60&&CUR&&CUR.eps&&CUR.eps.length<=1))return false;
+      log('引流短片('+Math.round(d0)+'s 单集)，自动跳下一条');
+      try{v.pause()}catch(e2){}
+      if(hls){try{hls.destroy()}catch(e3){}hls=null}
+      v.removeAttribute('src');try{v.load()}catch(e4){}
+      tip('这条是引流短片，自动跳下一个');
+      if(PICKIDX>=0)autoPick(PICKIDX+1);
+      return true;
+    };
+    v.onloadedmetadata=function(){
+      if(skipJunk())return;
+      doSeek();
+    };
+    if(r.kind==='hls'){
+      if(window.Hls&&Hls.isSupported()){
+        hls=new Hls({maxBufferLength:30,manifestLoadingTimeOut:20000});
+        hls.on(Hls.Events.ERROR,function(ev,d){
+          if(!d||!d.fatal)return;
+          log('播放错误 '+d.type+' / '+d.details);
+          if(d.type==='mediaError'){
+            tip(why({error:d.type+' '+d.details},mod));
+            return;
+          }
+          onPlayFail(mod,it,ep,d.type+' '+d.details);
+        });
+        hls.on(Hls.Events.MANIFEST_PARSED,function(){
+          v.play().catch(function(){tip('已就绪，点 ▶ 播放');log('自动播放被拦，点一下 ▶')});
+        });
+        hls.loadSource(r.url);hls.attachMedia(v);
+      }else{
+        v.src=r.url;doSeek();
+        v.play().catch(function(){tip('已就绪，点 ▶ 播放')});
+      }
+    }else{
+      v.src=r.url;doSeek();
+      v.play().catch(function(){tip('已就绪，点 ▶ 播放');log('自动播放被拦，点一下 ▶')});
+    }
+    LAST_T=0;
+    wSave(mod,it,ep,sk,0);
+    refreshRowState(mod,it);
+    paintSrc(mod,it,ep);
+    setRoute(mod,it.id,ep);
+    syncFavBase(mod,it);
+    preloadNext();
+    armStall();
+  }catch(e){log('取播异常 '+e);tip('取播异常：'+esc(e&&e.message||e))}
+}
+function refreshRowState(mod,it){
+  var rows=document.querySelectorAll('.row');
+  for(var i=0;i<rows.length;i++)rows[i].classList.remove('act');
+}
+
+/* 当前条目全付费时自动往后试 */
+var PICKIDX=-1,SKIPN=0,LISTREF=[];
+function autoPick(i){
+  if(ROUTE_LOCK)return;
+  SKIPN++;
+  if(SKIPN>5||i>=ITEMS.length){
+    tip('这个模块当前没有可直接播放的条目。<br>换个模块，或点「找同剧」。');
+    return;
+  }
+  PICKIDX=i;
+  var row=document.querySelectorAll('#listBox .row')[i];
+  if(!row)return;
+  setTimeout(function(){if(document.querySelectorAll('#listBox .row')[i]===row)row.click()},200);
+}
+
+/* ---------------- 上下集 / 连播 ---------------- */
+function stepEp(dir){
+  if(!CUR||!CUR.eps||!CUR.eps.length)return;
+  var nodes=document.querySelectorAll('#eps .ep');
+  var idx=-1;
+  for(var i=0;i<CUR.eps.length;i++)if(Number(CUR.eps[i].n||CUR.eps[i].ep)===Number(CUR.ep)){idx=i;break}
+  if(idx<0)return;
+  for(var k=idx+dir;k>=0&&k<CUR.eps.length;k+=dir){
+    if(!CUR.eps[k].locked){
+      var b=nodes[k];
+      if(b){b.click();return}
+    }
+  }
+  tip(dir>0?'已经是最后一集':'已经是第一集');
+}
+
+/* ---------------- 上游健康轮询 / 自动换源 ---------------- */
+var HEALTH_MODS='mj,dt,mg,my,hk,hjw,hg,sj,hd,lz,yg,es,xd,cg';
+function paintHealth(){
+  var n=0,t=0;
+  for(var k in HEALTH){if(!HEALTH.hasOwnProperty(k))continue;t++;if(HEALTH[k].up)n++}
+  var st=$('#stat');
+  var bd=st.dataset.build||'短剧聚合台';
+  var un=Object.keys(UPD).length;
+  st.textContent=bd+(t?(' · 在线 '+n+'/'+t):'')+(un?(' · '+un+' 部更新'):'');
+  var opts=$('#mod').options;
+  for(var i=0;i<opts.length;i++){
+    var o=opts[i],h=HEALTH[o.value],base=o.dataset.base;
+    if(!base)continue;
+    o.textContent=(h&&!h.up?'⨯ ':'')+base;
+  }
+}
+async function healthTick(probe){
+  try{
+    var r=await api('health?probe='+(probe?1:0)+'&mods='+encodeURIComponent(HEALTH_MODS));
+    if(!r||!r.ok)return;
+    HEALTH=r.health||{};
+    paintHealth();
+    /* 当前模块挂了且没在播 → 自动挪到最健康的那个 */
+    var v=$('#v'),curMod=$('#mod')?$('#mod').value:'';
+    var playing=v&&!v.paused&&!v.ended&&v.currentTime>0;
+    if(curMod&&!modUp(curMod)&&!playing&&TAB==='list'){
+      var nx=nextHealthyMod(curMod);
+      if(nx&&nx!==curMod){
+        log('巡检发现 '+curMod+' 已挂，自动切到 '+nx);
+        END=false;PAGE_NO=1;ITEMS=[];SEEN={};$('#listBox').innerHTML='';loadList();
+      }
+    }
+  }catch(e){log('巡检失败 '+e)}
+}
+function modUp(m){var h=HEALTH[m];return !h||h.up}
+/* 按实测响应时间挑最健康的可播模块；巡检没数据时按固有可播性兜底 */
+function pickBestMod(){
+  var best=null,bestMs=1e9,fallback=null;
+  var PREFER=['mj','dt','mg','my','hk','hjw','cg','hg','sj','hd','lz','yg','es','xd'];
+  for(var k in MODS){
+    if(!MODS.hasOwnProperty(k))continue;
+    var h=HEALTH[k];
+    if(h&&!h.up)continue;
+    var play=MODS[k].play;
+    var rank=(play==='ok')?0:(play==='partial'?1:2);
+    if(rank===2){if(!fallback)fallback=k;continue}
+    var ms=(h&&h.ms)?h.ms:3000;
+    var score=rank*100000+ms;
+    if(score<bestMs){bestMs=score;best=k}
+  }
+  if(best)return best;
+  if(fallback)return fallback;
+  for(var i=0;i<PREFER.length;i++)if(MODS[PREFER[i]])return PREFER[i];
+  return Object.keys(MODS)[0]||'';
+}
+function nextHealthyMod(from){
+  var sel=$('#mod'),opts=sel.options,idx=-1;
+  for(var i=0;i<opts.length;i++)if(opts[i].value===from){idx=i;break}
+  for(var k=1;k<opts.length;k++){
+    var o=opts[(idx+k)%opts.length];
+    if(o.value===from)continue;
+    if(!modUp(o.value))continue;
+    sel.value=o.value;
+    return o.value;
+  }
+  return null;
+}
+/* 播放失败时拿剧名去别的模块找同款，按候选顺序逐个试，直到某一条真能播 */
+async function autoAlt(mod,it,ep,force){
+  var key=mod+':'+it.id+':'+ep;
+  if(!force&&(ALT_DONE[key]||ALT_TRY>=3))return false;
+  ALT_DONE[key]=1;ALT_TRY++;
+  var title=it&&it.title||'';
+  if(!title){log('没有剧名，无法换源');return false}
+  log('换源检索：'+title+' ep'+ep);
+  tip('正在找备用源…');
+  try{
+    var r=await api('alt?title='+encodeURIComponent(title)+'&ep='+ep+'&exclude='+mod);
+    if(!r.ok||!r.items||!r.items.length){
+      log('没有同剧的其他源');tip('这个源挂了，且没有找到备用源<br>换个模块手动搜一下');
+      return false;
+    }
+    var cands=r.items.slice(0,3);
+    log('候选 '+cands.length+' 个：'+cands.map(function(c){return c.mod}).join('/'));
+    for(var i=0;i<cands.length;i++){
+      var c=cands[i];
+      if(!modUp(c.mod)){log('跳过已挂模块 '+c.mod);continue}
+      log('切到 '+c.mod+' · '+(c.title||''));
+      tip('原源不可用，切到「'+esc(c.mod)+'」<br>'+esc(c.title||''));
+      try{
+        await openItem(c.mod,c,{classList:{add:function(){},remove:function(){}}},Number(ep));
+        return true;
+      }catch(e){log('候选 '+c.mod+' 失败 '+e)}
+    }
+    log('候选全部失败');return false;
+  }catch(e){log('换源异常 '+e);return false}
+}
+
+/* 播放期故障处置：同源重试一次 → 还不成就换源 */
+function onPlayFail(mod,it,ep,reason){
+  if(!it)return;
+  var now=Date.now();
+  if(now-PLAST>25000)PFAIL=0;
+  PLAST=now;PFAIL++;
+  log('播放异常 #'+PFAIL+' '+(reason||''));
+  if(PFAIL===1){
+    tip('上游异常，正在重连…');
+    setTimeout(function(){try{play(mod,it,ep,null,0)}catch(e){}},1200);
+    return;
+  }
+  PFAIL=0;
+  tip('上游持续异常，尝试换源…');
+  autoAlt(mod,it,ep);
+}
+/* 长时间卡在缓冲也算上游挂了 */
+function armStall(){
+  if(STALL_T)clearTimeout(STALL_T);
+  STALL_T=setTimeout(function(){
+    var v=$('#v');
+    if(!v||!CUR||v.ended)return;
+    if(v.readyState<3&&!v.paused)onPlayFail(CUR.mod,CUR.it,CUR.ep,'stall '+v.readyState);
+  },28000);
+}
+function disarmStall(){if(STALL_T){clearTimeout(STALL_T);STALL_T=null}}
+/* 明确告知用户当前在看哪个源，换源后可追溯 */
+function paintSrc(mod,it,ep){
+  var e=$('#srcinfo');
+  if(!e)return;
+  var h=HEALTH[mod];
+  e.innerHTML='源 <b>'+esc(mod)+'</b> · 第'+esc(ep)+'集'
+    +(h&&!h.up?' <span style="color:#e5534b">上游异常</span>':'');
+}
+/* ---------------- 深链直达 / 分享 ---------------- */
+function setRoute(mod,id,ep){
+  try{
+    var h='#/'+encodeURIComponent(mod)+'/'+encodeURIComponent(id)+(ep?('/'+ep):'');
+    if(location.hash!==h)history.replaceState(null,'',h);
+  }catch(e){}
+}
+function parseRoute(){
+  var h=String(location.hash||'').replace(/^#\/?/,'');
+  if(!h)return null;
+  var p=h.split('/');
+  if(p.length<2)return null;
+  var ep=0;
+  if(p[2])ep=parseInt(p[2],10)||0;
+  return {mod:decodeURIComponent(p[0]),id:decodeURIComponent(p[1]),ep:ep};
+}
+async function openRoute(){
+  var r=parseRoute();
+  if(!r||!r.mod||!r.id)return false;
+  if(!MODS[r.mod]){log('链接里的模块不存在：'+r.mod);return false}
+  log('直达 '+r.mod+'/'+r.id+(r.ep?(' 第'+r.ep+'集'):''));
+  try{
+    var d=await api('detail?mod='+r.mod+'&id='+encodeURIComponent(r.id));
+    if(!d||!d.ok){tip('这个链接的剧取不到<br>可能已下架，换一个试试');log('直达失败 '+(d&&d.error||''));return false}
+    var it={mod:r.mod,id:r.id,title:d.title||r.id,cover:d.cover||'',ep:d.epTotal||''};
+    await openItem(r.mod,it,null,r.ep||null,d);
+    return true;
+  }catch(e){log('直达异常 '+e);return false}
+}
+function fallbackCopy(t,cb){
+  try{
+    var ta=document.createElement('textarea');
+    ta.value=t;ta.style.position='fixed';ta.style.top='-100px';ta.style.opacity='0';
+    document.body.appendChild(ta);ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);cb();
+  }catch(e){tip(esc(t))}
+}
+function shareLink(){
+  if(!CUR||!CUR.it){tip('先选一部剧');return}
+  setRoute(CUR.mod,CUR.it.id,CUR.ep||1);
+  var u=location.href;
+  var done=function(){
+    tip('链接已复制<br><span style="font-size:12px;color:var(--mut)">'+esc(u)+'</span>');
+    log('已生成分享链接');
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(u).then(done,function(){fallbackCopy(u,done)});
+  }else fallbackCopy(u,done);
+}
+
+/* ---------------- 继续观看 ---------------- */
+function paintResume(){
+  var b=$('#resume');
+  if(!b)return;
+  var h=histList();
+  if(!h.length||!(h[0].t>=3)){b.style.display='none';return}
+  var x=h[0];
+  b.style.display='';
+  b.textContent='继续「'+String(x.title||'').slice(0,10)+'」第'+x.ep+'集';
+  b.onclick=function(){
+    var y=histList()[0];
+    if(!y)return;
+    ROUTE_LOCK=1;
+    openItem(y.mod,{mod:y.mod,id:y.id,title:y.title,cover:y.cover,ep:y.ep},null,Number(y.ep)||1);
+  };
+}
+
+/* ---------------- 追更检查 ---------------- */
+var UPD={};
+async function chkUpdates(){
+  var fav=favList();
+  if(!fav.length){UPD={};paintHealth();return}
+  var segs=[];
+  for(var i=0;i<fav.length&&segs.length<12;i++){
+    var x=fav[i];
+    segs.push(x.mod+':'+x.id+':'+(Number(x.n)||0));
+  }
+  try{
+    var r=await api('updates?items='+encodeURIComponent(segs.join(',')));
+    if(!r||!r.ok){log('追更检查跳过：'+(r&&r.error||'接口异常'));return}
+    var out={},n=0,dirty=false,fav2=favList();
+    (r&&r.items||[]).forEach(function(x){
+      if(!x||!x.ok)return;
+      if(x.upd){out[x.mod+':'+x.id]=Number(x.epTotal)||0;n++}
+      else if(!Number(x.ep)&&Number(x.epTotal)){
+        /* 首次检查没有基线：先把当前集数记下来，下次才比得出「更新」 */
+        for(var i=0;i<fav2.length;i++){
+          if(fav2[i].mod===x.mod&&fav2[i].id===x.id&&!Number(fav2[i].n)){
+            fav2[i].n=Number(x.epTotal);dirty=true;
+          }
+        }
+      }
+    });
+    if(dirty)LS.s('fav',fav2);
+    UPD=out;
+    log('追更检查 '+segs.length+' 部 · '+n+' 部有更新');
+    if(TAB==='fav')renderLocal();
+    paintHealth();
+  }catch(e){log('追更检查失败 '+e)}
+}
+
+/* 看过新集后把收藏的基线抬高，更新提示自动消掉 */
+function syncFavBase(mod,it){
+  if(!CUR||!CUR.eps||!CUR.eps.length)return;
+  var f=favList(),ch=false;
+  for(var i=0;i<f.length;i++){
+    if(f[i].mod===mod&&f[i].id===it.id&&Number(CUR.eps.length)>Number(f[i].n||0)){
+      f[i].n=CUR.eps.length;ch=true;
+    }
+  }
+  if(!ch)return;
+  LS.s('fav',f);
+  var k=mod+':'+it.id;
+  if(UPD[k]){delete UPD[k];paintHealth();if(TAB==='fav')renderLocal()}
+}
+
+/* ---------------- 下一集预热 ---------------- */
+var PRELOAD_T=null,UPD_TIMER=null;
+function preloadNext(){
+  if(PRELOAD_T){clearTimeout(PRELOAD_T);PRELOAD_T=null}
+  if(!CUR||!CUR.it||!CUR.eps||!CUR.eps.length)return;
+  var nxt=null,hit=false;
+  for(var i=0;i<CUR.eps.length;i++){
+    if(Number(CUR.eps[i].n||CUR.eps[i].ep)===Number(CUR.ep)){
+      hit=true;
+      for(var k=i+1;k<CUR.eps.length;k++){if(!CUR.eps[k].locked){nxt=CUR.eps[k];break}}
+      break;
+    }
+  }
+  if(!hit||!nxt)return;
+  var mod=CUR.mod,it=CUR.it,ep=Number(nxt.n||nxt.ep);
+  PRELOAD_T=setTimeout(function(){
+    api('m3u8?mod='+mod+'&id='+encodeURIComponent(it.id)+'&ep='+ep+'&fmt=json').then(function(r){
+      if(r&&r.ok)log('已预热第'+ep+'集清单');
+    }).catch(function(){});
+  },6000);
+}
+
+/* ---------------- 诊断面板 / 数据迁移 ---------------- */
+function diagOpen(on){
+  var d=$('#diag');
+  if(!d)return;
+  d.className=on?'on':'';
+  if(on)paintDiag();
+}
+function paintDiag(){
+  var rows='',keys=Object.keys(MODS);
+  for(var i=0;i<keys.length;i++){
+    var m=keys[i],h=HEALTH[m]||{};
+    if(h.up===undefined&&!h.ms&&!h.fails)continue;
+    rows+='<tr><td><b>'+esc(m)+'</b></td><td>'+esc((MODS[m]&&MODS[m].name)||'')+'</td>'
+      +'<td class="'+(h.up===false?'bad':'ok')+'">'+(h.up===false?'离线':'在线')+'</td>'
+      +'<td>'+(h.ms?h.ms+' ms':'-')+'</td>'
+      +'<td>'+(h.fails||0)+'</td><td>'+esc(String(h.err||'').slice(0,36))+'</td></tr>';
+  }
+  $('#dHealth').innerHTML=rows||'<tr><td colspan="6">还没有巡检数据，点下面「重新探测」</td></tr>';
+  var f=favList(),h2=histList();
+  $('#dLocal').innerHTML=
+    '<tr><td>收藏</td><td><b>'+f.length+'</b> 条</td><td>其中有更新</td><td><b>'+Object.keys(UPD).length+'</b> 部</td></tr>'
+    +'<tr><td>历史</td><td><b>'+h2.length+'</b> 条</td><td>当前源</td><td><b>'+esc((CUR&&CUR.mod)||'-')+'</b></td></tr>'
+    +'<tr><td>构建</td><td colspan="3">'+esc(($('#stat')&&$('#stat').dataset.build)||'-')+'</td></tr>';
+}
+function exportData(){
+  var f=favList(),h=histList();
+  var data={v:1,at:new Date().toISOString(),fav:f,hist:h};
+  try{
+    var blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='duanju-'+new Date().toISOString().slice(0,10)+'.json';
+    document.body.appendChild(a);a.click();
+    setTimeout(function(){try{URL.revokeObjectURL(a.href)}catch(e){};a.remove()},1500);
+    log('已导出 收藏'+f.length+' / 历史'+h.length);
+    tip('已导出数据文件');
+  }catch(e){tip('导出失败：'+esc(e&&e.message||e))}
+}
+function importData(text){
+  try{
+    var d=JSON.parse(text);
+    var f=Array.isArray(d.fav)?d.fav:[],h=Array.isArray(d.hist)?d.hist:[];
+    if(!f.length&&!h.length){tip('文件里没有收藏或历史数据');return}
+    var cur=favList(),seen={};
+    for(var i=0;i<cur.length;i++)seen[cur[i].mod+':'+cur[i].id]=1;
+    var addF=0;
+    for(var j=0;j<f.length;j++){
+      var x=f[j];
+      if(!x||!x.mod||!x.id)continue;
+      if(seen[x.mod+':'+x.id])continue;
+      seen[x.mod+':'+x.id]=1;cur.push(x);addF++;
+    }
+    LS.s('fav',cur.slice(0,200));
+    var ch=histList(),seen2={};
+    for(var k=0;k<ch.length;k++)seen2[ch[k].mod+':'+ch[k].id]=1;
+    var addH=0;
+    for(var z=0;z<h.length;z++){
+      var y=h[z];
+      if(!y||!y.mod||!y.id)continue;
+      if(seen2[y.mod+':'+y.id])continue;
+      seen2[y.mod+':'+y.id]=1;ch.push(y);addH++;
+    }
+    ch.sort(function(a,b){return (b.ts||0)-(a.ts||0)});
+    LS.s('hist',ch.slice(0,60));
+    log('导入完成 收藏+'+addF+' 历史+'+addH);
+    tip('导入完成：收藏 +'+addF+' 条 / 历史 +'+addH+' 条');
+    if(TAB!=='list')renderLocal();
+    paintResume();paintDiag();chkUpdates();
+  }catch(e){tip('导入失败：不是合法的数据文件')}
+}
+
+/* ---------------- 启动 ---------------- */
+async function boot(){
+  try{
+    var s=await api('status');
+    MODS=s.modules||{};
+    HEALTH=s.health||{};
+    var st0=$('#stat');st0.dataset.build=s.build||'';st0.textContent=s.build||'';
+    paintHealth();
+  }catch(e){log('状态获取失败 '+e)}
+  var sel=$('#mod');
+  var keys=Object.keys(MODS);
+  var oa=document.createElement('option');
+  oa.value='all';oa.textContent='全部模块 · 混排';oa.dataset.base='全部模块 · 混排';
+  sel.appendChild(oa);
+  for(var i=0;i<keys.length;i++){
+    var k=keys[i],v=MODS[k];
+    var o=document.createElement('option');
+    var label=k+' · '+v.name+(MARKS[v.play]||'');
+    o.value=k;o.textContent=label;o.dataset.base=label;
+    sel.appendChild(o);
+  }
+  var qm=new URLSearchParams(location.search).get('mod');
+  var first=pickBestMod();
+  if(!first)$('#stat').textContent='模块表未就绪';
+  sel.value=(qm&&(qm==='all'||MODS[qm]))?qm:first;
+  paintHealth();
+  sel.onchange=function(){ setTab('list'); };
+  $('#go').onclick=function(){
+    var kw=$('#kw').value.trim();
+    if(kw)doSearch(kw);
+    else setTab('list');
+  };
+  $('#kw').addEventListener('keydown',function(e){if(e.key==='Enter')$('#go').click()});
+  $('#rnd').onclick=function(){
+    if(!ITEMS.length)return;
+    var i=Math.floor(Math.random()*ITEMS.length);
+    var row=document.querySelectorAll('#listBox .row')[i];
+    if(row)row.click();
+  };
+  $('#tbList').onclick=function(){setTab('list')};
+  $('#tbFav').onclick=function(){setTab('fav')};
+  $('#tbHist').onclick=function(){setTab('hist')};
+  $('#more').onclick=function(){loadList()};
+
+  var v0=$('#v');
+  var clearTip=function(){tip('')};
+  ['playing','loadedmetadata','canplay','play'].forEach(function(ev){v0.addEventListener(ev,clearTip)});
+  v0.addEventListener('timeupdate',function(){
+    if(v0.currentTime>0.2)tip('');
+    if(CUR&&v0.currentTime-LAST_T>5){LAST_T=v0.currentTime;wSave(CUR.mod,CUR.it,CUR.ep,v0.currentTime,v0.duration)}
+  });
+  v0.addEventListener('ended',function(){
+    if(CUR)wSave(CUR.mod,CUR.it,CUR.ep,v0.duration,v0.duration);
+    if($('#autoNext').checked)setTimeout(function(){stepEp(1)},300);
+  });
+  v0.addEventListener('playing',function(){
+    PFAIL=0;ALT_TRY=0;ALT_DONE={};disarmStall();
+    paintSrc(CUR?CUR.mod:'',CUR?CUR.it:'',CUR?CUR.ep:'');
+  });
+  v0.addEventListener('waiting',function(){armStall()});
+  v0.addEventListener('stalled',function(){armStall()});
+  v0.addEventListener('error',function(){
+    var e=v0.error;
+    if(!CUR||!CUR.it)return;
+    onPlayFail(CUR.mod,CUR.it,CUR.ep,'media code '+(e?e.code:'?'));
+  });
+  $('#rate').onchange=function(){v0.playbackRate=Number($('#rate').value)};
+  $('#prevEp').onclick=function(){stepEp(-1)};
+  $('#nextEp').onclick=function(){stepEp(1)};
+  $('#sameBtn').onclick=function(){
+    if(!CUR||!CUR.it){tip('先选一部剧');return}
+    var t=CUR.it.title||'';
+    var k=t.replace(/[（(].*?[)）]/g,'').trim().slice(0,10);
+    if(!k)return;
+    $('#kw').value=k;
+    log('找同剧：'+k);
+    doSearch(k);
+  };
+  $('#altBtn').onclick=function(){
+    if(!CUR||!CUR.it){tip('先选一部剧');return}
+    tip('手动换源…');
+    autoAlt(CUR.mod,CUR.it,CUR.ep||1,true);
+  };
+  $('#shareBtn').onclick=shareLink;
+  $('#diag').onclick=function(e){if(e.target===this)diagOpen(false)};
+  $('#diagClose').onclick=function(){diagOpen(false)};
+  $('#dProbe').onclick=function(){
+    tip('正在探测各上游…');
+    healthTick(true);
+    setTimeout(function(){paintDiag();tip('');log('诊断：手动探测完成')},1800);
+  };
+  $('#expBtn').onclick=exportData;
+  $('#impBtn').onclick=function(){$('#impFile').click()};
+  $('#impFile').onchange=function(){
+    var f=this.files&&this.files[0];
+    if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){importData(String(rd.result||''))};
+    rd.onerror=function(){tip('读文件失败')};
+    rd.readAsText(f,'utf-8');
+    this.value='';
+  };
+  $('#clrHist').onclick=function(){
+    if(!confirm('清空全部观看历史？'))return;
+    LS.s('hist',[]);log('已清空历史');paintResume();paintDiag();
+    if(TAB==='hist')renderLocal();
+  };
+  $('#clrFav').onclick=function(){
+    if(!confirm('清空全部收藏？'))return;
+    LS.s('fav',[]);UPD={};log('已清空收藏');paintHealth();paintDiag();
+    if(TAB==='fav')renderLocal();
+  };
+
+  document.addEventListener('keydown',function(e){
+    var tag=(e.target.tagName||'').toLowerCase();
+    if(tag==='input'||tag==='select'||tag==='textarea'||tag==='video')return;
+    var v=$('#v');
+    if(e.code==='Space'){e.preventDefault();v.paused?v.play():v.pause()}
+    else if(e.key==='ArrowLeft'){e.preventDefault();v.currentTime=Math.max(0,v.currentTime-5)}
+    else if(e.key==='ArrowRight'){e.preventDefault();v.currentTime=Math.min(v.duration||0,v.currentTime+5)}
+    else if(e.key==='ArrowUp'){e.preventDefault();v.volume=Math.min(1,v.volume+0.1)}
+    else if(e.key==='ArrowDown'){e.preventDefault();v.volume=Math.max(0,v.volume-0.1)}
+    else if(e.key==='n'||e.key==='N'){stepEp(1)}
+    else if(e.key==='p'||e.key==='P'){stepEp(-1)}
+    else if(e.key==='f'||e.key==='F'){
+      if(document.fullscreenElement)document.exitFullscreen();
+      else if($('#stage').requestFullscreen)$('#stage').requestFullscreen();
+    }
+    else if(e.key==='?'||e.key==='？'){
+      e.preventDefault();
+      diagOpen(!$('#diag').classList.contains('on'));
+    }
+  });
+
+  /* PWA：静态页也要指向 Worker 的 manifest */
+  try{
+    var BASE=(typeof API!=='undefined')?API:location.origin;
+    var lk=document.createElement('link');
+    lk.rel='manifest';lk.href=BASE+'/manifest.webmanifest';
+    document.head.appendChild(lk);
+  }catch(e){}
+
+  window.addEventListener('hashchange',function(){
+    if(parseRoute()){ROUTE_LOCK=1;openRoute()}
+  });
+
+  healthTick(true);
+  if(HB_TIMER)clearInterval(HB_TIMER);
+  HB_TIMER=setInterval(function(){healthTick(true)},60000);
+  if(UPD_TIMER)clearInterval(UPD_TIMER);
+  UPD_TIMER=setInterval(function(){chkUpdates()},600000);
+
+  paintResume();
+  var rd=parseRoute();
+  if(rd){ROUTE_LOCK=1;openRoute()}
+  loadList();
+  chkUpdates();
+}
+function setTab(t){
+  AUTO_SKIP=0;
+  TAB=t;
+  $('#tbList').className=t==='list'?'on':'';
+  $('#tbFav').className=t==='fav'?'on':'';
+  $('#tbHist').className=t==='hist'?'on':'';
+  if(t==='list'){END=false;PAGE_NO=1;clearList();loadList()}
+  else renderLocal();
+}
+boot();
+</script></body></html>
